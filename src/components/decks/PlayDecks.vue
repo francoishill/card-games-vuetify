@@ -76,6 +76,43 @@ export default {
         </v-col>
 
       </v-row>
+
+      <v-divider />
+
+      <v-row no-gutters justify="center">
+
+        <v-col
+          v-for="card in piles.faceUpCards"
+          :key="card.id"
+          cols="6"
+          sm="4">
+
+          <PlayCard
+            v-bind="card"
+            class="pa-2 ma-2" />
+
+        </v-col>
+
+      </v-row>
+
+      <v-divider />
+
+      <v-row no-gutters justify="center">
+
+        <v-col
+          v-for="card in piles.faceDownCards"
+          :key="card.id"
+          cols="6"
+          sm="4">
+
+          <PlayCard
+            v-bind="card"
+            class="pa-2 ma-2" />
+
+        </v-col>
+
+      </v-row>
+
     </v-container>
 
   </div>
