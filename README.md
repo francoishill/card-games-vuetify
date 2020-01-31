@@ -5,6 +5,7 @@ Card game app written in Vuetify/Vuejs, using AspCoreCardGameEngine API
 ## Roadmap
 
 0. [ ] More automated way to return `response.data` for each axios repository call?
+1. [ ] Give credit to https://superdevresources.com/free-playing-cards-set/ for images
 
 ## Project setup
 
