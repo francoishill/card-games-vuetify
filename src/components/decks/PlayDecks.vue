@@ -1,11 +1,13 @@
 <script>
 import PlayCard from './PlayCard.vue'
+import PlayCardHidden from './PlayCardHidden.vue'
 
 export default {
   inject: ['deckRepository'],
 
   components: {
     PlayCard,
+    PlayCardHidden,
   },
 
   data() {
@@ -105,7 +107,7 @@ export default {
           cols="6"
           sm="4">
 
-          <PlayCard
+          <PlayCardHidden
             v-bind="card"
             class="pa-2 ma-2" />
 

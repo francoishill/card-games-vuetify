@@ -69,17 +69,12 @@ function getCardImageUri(suit, value) {
 export default {
   props: {
     id: { type: Number, required: true },
-    suit: { type: String },
-    value: { type: Number },
-    isVisible: { type: Boolean, required: true },
+    suit: { type: String, required: true },
+    value: { type: Number, required: true },
   },
 
   computed: {
     imageUrl() {
-      if (!this.isVisible) return 'https://i.ibb.co/qxm0K0q/Emerald.png'
-      // if (!this.isVisible) return 'https://i.ibb.co/G0r9QLv/Peter-River.png'
-      // if (!this.isVisible) return 'https://i.ibb.co/zxnm6Ws/Pomegranate.png'
-      // if (!this.isVisible) return 'https://i.ibb.co/HzGnxwB/Sun-Flower.png'
       return getCardImageUri(this.suit, this.value)
     },
   },
