@@ -9,10 +9,29 @@ export default {
   },
 
   data() {
+    let storedGameId = localStorage.getItem('temp-game-id')
+    let storedPlayerId = localStorage.getItem('temp-player-id')
+
     return {
-      busy: false,
-      decks: undefined,
+      hadStoredIds: !!storedGameId && !!storedPlayerId,
+
+      busyCreating: false,
+      busyJoining: false,
+      busyGettingPiles: false,
+
+      gameId: storedGameId || undefined,
+      playerId: storedPlayerId || undefined,
+      piles: undefined,
     }
+  },
+
+  watch: {
+    playerId(to) {
+      if (to) {
+        localStorage.setItem('temp-game-id', this.gameId)
+        localStorage.setItem('temp-player-id', to)
+      }
+    },
   },
 }
 </script>
@@ -20,20 +39,32 @@ export default {
 <template>
   <div>
     <PromiseHeadless
-      :factory="deckRepository.createDeck"
-      :arg="{shuffled:true}"
-      :busy.sync="busy"
-      @then="decks=$event" />
+      v-if="!hadStoredIds"
+      :factory="deckRepository.createGame"
+      :arg="{numberPlayers: 2}"
+      :busy.sync="busyCreating"
+      @then="gameId=$event.id" />
 
-    <v-container class="grey lighten-5">
+    <PromiseHeadless
+      v-if="gameId && !hadStoredIds"
+      :factory="deckRepository.joinGame"
+      :arg="{gameId: gameId}"
+      :busy.sync="busyJoining"
+      @then="playerId = $event.playerId" />
 
-      <v-row no-gutters
-        v-for="deck in decks"
-        :key="deck.id"
-        justify="center">
+    <PromiseHeadless
+      v-if="playerId"
+      :factory="deckRepository.getPlayerPiles"
+      :arg="{gameId: gameId, playerId: playerId}"
+      :busy.sync="busyGettingPiles"
+      @then="piles = $event" />
+
+    <v-container v-if="piles" class="grey lighten-5">
+
+      <v-row no-gutters justify="center">
 
         <v-col
-          v-for="card in deck.cards"
+          v-for="card in piles.handCards"
           :key="card.id"
           cols="6"
           sm="4">
