@@ -1,12 +1,6 @@
 <script>
-import PlayDecks from './components/decks/PlayDecks.vue'
-
 export default {
   name: 'App',
-
-  components: {
-    PlayDecks,
-  },
 };
 </script>
 
@@ -14,7 +8,7 @@ export default {
   <v-app>
 
     <v-content>
-      <PlayDecks />
+      <router-view />
     </v-content>
 
   </v-app>
