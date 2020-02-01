@@ -15,4 +15,9 @@ export default {
     const response = await ApiClient.get(`api/Games/shithead/${gameId}/piles`, { headers: { 'X-Player-Id': playerId } });
     return response.data;
   },
+
+  async playCards({ gameId, playerId, cardIds }) {
+    const response = await ApiClient.post(`api/Games/shithead/${gameId}/play-cards`, { "CardIds": cardIds }, { headers: { 'X-Player-Id': playerId } });
+    return response.data;
+  },
 };

@@ -103,7 +103,8 @@ export default {
 
   <v-card
     :width="cardWidth"
-    :style="{opacity: faded ? 0.5 : undefined}">
+    :style="{opacity: faded ? 0.5 : undefined}"
+    @click="$emit('click')">
 
     <PlayCardVisibleImage
       v-if="isVisible"

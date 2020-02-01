@@ -18,11 +18,21 @@ export default {
       busyCreating: false,
       busyJoining: false,
       busyGettingPiles: false,
+      busyPlayingCards: false,
 
       gameId: storedGameId || undefined,
       playerId: storedPlayerId || undefined,
-      piles: undefined,
+      pilesResponse: undefined,
+
+      playCardsPayload: undefined,
+      triggerPlayCards: 0,
+      triggerGetPlayerPiles: 0,
     }
+  },
+
+  computed: {
+    canPlayFaceUp() { return this.pilesResponse.handCards.length === 0 },
+    canPlayFaceDown() { return this.pilesResponse.handCards.length === 0 && this.pilesResponse.faceUpCards.length === 0 },
   },
 
   watch: {
@@ -31,6 +41,42 @@ export default {
         localStorage.setItem('temp-game-id', this.gameId)
         localStorage.setItem('temp-player-id', to)
       }
+    },
+  },
+
+  methods: {
+    onHandCardClick(card) {
+      console.debug('onHandCardClick', card)
+      this.playCards([card.id])
+    },
+
+    onFaceUpCardClick(card) {
+      if (!this.canPlayFaceUp) {
+        console.debug('Cannot play FaceUp cards currently')
+        return
+      }
+
+      console.debug('onFaceUpCardClick', card)
+      this.playCards([card.id])
+    },
+
+    onFaceDownCardClick(card) {
+      if (!this.canPlayFaceDown) {
+        console.debug('Cannot play FaceDown cards currently')
+        return
+      }
+
+      console.debug('onFaceDownCardClick', card)
+      this.playCards([card.id])
+    },
+
+    playCards(cardIds) {
+      this.playCardsPayload = {
+        gameId: this.gameId,
+        playerId: this.playerId,
+        cardIds: cardIds,
+      }
+      this.triggerPlayCards++
     },
   },
 }
@@ -54,24 +100,35 @@ export default {
 
     <PromiseHeadless
       v-if="playerId"
+      :key="`get-piles-${triggerGetPlayerPiles}`"
       :factory="deckRepository.getPlayerPiles"
       :arg="{gameId: gameId, playerId: playerId}"
       :busy.sync="busyGettingPiles"
-      @then="piles = $event" />
+      @then="pilesResponse = $event" />
 
-    <v-container v-if="piles" class="grey lighten-5">
+    <PromiseHeadless
+      v-if="playCardsPayload"
+      :key="`play-cards-${triggerPlayCards}`"
+      :factory="deckRepository.playCards"
+      :arg="playCardsPayload"
+      :busy.sync="busyPlayingCards"
+      @then="triggerGetPlayerPiles++" />
+
+    <v-container v-if="pilesResponse" class="grey lighten-5">
 
       <v-row no-gutters justify="center">
 
         <v-col
-          v-for="card in piles.handCards"
+          v-for="card in pilesResponse.handCards"
           :key="card.id"
           cols="3"
           sm="3">
 
           <PlayCard
             v-bind="card"
-            class="pa-2 ma-2" />
+            :loading="busyPlayingCards"
+            class="pa-2 ma-2"
+            @click="onHandCardClick(card)" />
 
         </v-col>
 
@@ -82,15 +139,17 @@ export default {
       <v-row no-gutters justify="center">
 
         <v-col
-          v-for="card in piles.faceUpCards"
+          v-for="card in pilesResponse.faceUpCards"
           :key="card.id"
           cols="3"
           sm="3">
 
           <PlayCard
             v-bind="card"
-            :faded="piles.handCards.length > 0"
-            class="pa-2 ma-2" />
+            :faded="!canPlayFaceUp"
+            :loading="busyPlayingCards"
+            class="pa-2 ma-2"
+            @click="onFaceUpCardClick(card)" />
 
         </v-col>
 
@@ -101,15 +160,17 @@ export default {
       <v-row no-gutters justify="center">
 
         <v-col
-          v-for="card in piles.faceDownCards"
+          v-for="card in pilesResponse.faceDownCards"
           :key="card.id"
           cols="3"
           sm="3">
 
           <PlayCard
             v-bind="card"
-            :faded="piles.handCards.length > 0 || piles.faceUpCards.length > 0"
-            class="pa-2 ma-2" />
+            :faded="!canPlayFaceDown"
+            :loading="busyPlayingCards"
+            class="pa-2 ma-2"
+            @click="onFaceDownCardClick(card)" />
 
         </v-col>
 
