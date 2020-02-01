@@ -138,6 +138,11 @@ export default {
       @then="triggerGetPlayerPiles++; clearPlayCardsError()"
       @catch="onPlayCardsError" />
 
+    <RealtimeMessageListener
+      method="GameMove"
+      @message="triggerGetPlayerPiles++"
+      @reconnect="triggerGetPlayerPiles++" />
+
     <v-container v-if="pilesResponse" class="grey lighten-5">
 
       <v-snackbar
