@@ -16,11 +16,7 @@ export default {
 </script>
 
 <template>
-  <v-card width="116">
 
-    <img
-      :src="imageUrl"
-      width="96">
+  <img :src="imageUrl">
 
-  </v-card>
 </template>

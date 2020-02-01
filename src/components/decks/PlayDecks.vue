@@ -1,13 +1,11 @@
 <script>
 import PlayCard from './PlayCard.vue'
-import PlayCardHidden from './PlayCardHidden.vue'
 
 export default {
   inject: ['deckRepository'],
 
   components: {
     PlayCard,
-    PlayCardHidden,
   },
 
   data() {
@@ -68,8 +66,8 @@ export default {
         <v-col
           v-for="card in piles.handCards"
           :key="card.id"
-          cols="6"
-          sm="4">
+          cols="3"
+          sm="3">
 
           <PlayCard
             v-bind="card"
@@ -86,11 +84,12 @@ export default {
         <v-col
           v-for="card in piles.faceUpCards"
           :key="card.id"
-          cols="6"
-          sm="4">
+          cols="3"
+          sm="3">
 
           <PlayCard
             v-bind="card"
+            :faded="piles.handCards.length > 0"
             class="pa-2 ma-2" />
 
         </v-col>
@@ -104,11 +103,12 @@ export default {
         <v-col
           v-for="card in piles.faceDownCards"
           :key="card.id"
-          cols="6"
-          sm="4">
+          cols="3"
+          sm="3">
 
-          <PlayCardHidden
+          <PlayCard
             v-bind="card"
+            :faded="piles.handCards.length > 0 || piles.faceUpCards.length > 0"
             class="pa-2 ma-2" />
 
         </v-col>
