@@ -2,7 +2,7 @@
 import PlayCard from './PlayCard.vue'
 
 export default {
-  inject: ['deckRepository'],
+  inject: ['shitheadRepository'],
 
   components: {
     PlayCard,
@@ -86,14 +86,14 @@ export default {
   <div>
     <PromiseHeadless
       v-if="!hadStoredIds"
-      :factory="deckRepository.createGame"
+      :factory="shitheadRepository.createGame"
       :arg="{numberPlayers: 2}"
       :busy.sync="busyCreating"
       @then="gameId=$event.id" />
 
     <PromiseHeadless
       v-if="gameId && !hadStoredIds"
-      :factory="deckRepository.joinGame"
+      :factory="shitheadRepository.joinGame"
       :arg="{gameId: gameId}"
       :busy.sync="busyJoining"
       @then="playerId = $event.playerId" />
@@ -101,7 +101,7 @@ export default {
     <PromiseHeadless
       v-if="playerId"
       :key="`get-piles-${triggerGetPlayerPiles}`"
-      :factory="deckRepository.getPlayerPiles"
+      :factory="shitheadRepository.getPlayerPiles"
       :arg="{gameId: gameId, playerId: playerId}"
       :busy.sync="busyGettingPiles"
       @then="pilesResponse = $event" />
@@ -109,7 +109,7 @@ export default {
     <PromiseHeadless
       v-if="playCardsPayload"
       :key="`play-cards-${triggerPlayCards}`"
-      :factory="deckRepository.playCards"
+      :factory="shitheadRepository.playCards"
       :arg="playCardsPayload"
       :busy.sync="busyPlayingCards"
       @then="triggerGetPlayerPiles++" />

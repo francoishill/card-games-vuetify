@@ -1,5 +1,5 @@
 <script>
-import PlayDecks from '../components/decks/PlayDecks.vue'
+import PlayDecks from '../components/shithead/PlayDecks.vue'
 
 export default {
   components: {
