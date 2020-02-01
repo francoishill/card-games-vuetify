@@ -76,13 +76,18 @@ export default {
         if (this.fullCacheKey) {
           this.LocalCacheService.setCacheValue(this.fullCacheKey, result)
         }
-      } catch (err) {
-        if (!this.doNotAlertError) {
-          this.ErrorService.add(err)
+      } catch (originalErr) {
+        if (this.doNotHandleError) {
+          throw originalErr;
         }
 
-        if (this.doNotHandleError) {
-          throw err;
+        let err = originalErr
+        if (err.response && err.response.data && err.response.data.ErrorMessage) {
+          err = `${err.response.data.ErrorMessage} [code ${err.response.data.ErrorCode}]`
+        }
+
+        if (!this.doNotAlertError) {
+          this.ErrorService.add(err)
         }
 
         if (err instanceof Error && err.is_warnings) {

@@ -27,6 +27,8 @@ export default {
       playCardsPayload: undefined,
       triggerPlayCards: 0,
       triggerGetPlayerPiles: 0,
+
+      playCardsError: undefined,
     }
   },
 
@@ -70,6 +72,11 @@ export default {
       this.playCards([card.id])
     },
 
+    onDiscardCardClick(card) {
+      console.debug('onDiscardCardClick', card)
+      alert('TODO: picking up discard pile is not yet implemented')
+    },
+
     playCards(cardIds) {
       this.playCardsPayload = {
         gameId: this.gameId,
@@ -77,6 +84,22 @@ export default {
         cardIds: cardIds,
       }
       this.triggerPlayCards++
+    },
+
+    onPlayCardsError(err) {
+      console.debug('onPlayCardsError', err)
+      const wrappedErr = { message: err }
+      this.playCardsError = wrappedErr
+
+      setTimeout(() => {
+        if (this.playCardsError === wrappedErr) {
+          this.playCardsError = undefined
+        }
+      }, 5 * 1000)
+    },
+
+    clearPlayCardsError() {
+      this.playCardsError = undefined
     },
   },
 }
@@ -112,9 +135,18 @@ export default {
       :factory="shitheadRepository.playCards"
       :arg="playCardsPayload"
       :busy.sync="busyPlayingCards"
-      @then="triggerGetPlayerPiles++" />
+      @then="triggerGetPlayerPiles++; clearPlayCardsError()"
+      @catch="onPlayCardsError" />
 
     <v-container v-if="pilesResponse" class="grey lighten-5">
+
+      <v-snackbar
+        v-if="playCardsError"
+        :value="true"
+        @input="playCardsError=undefined"
+        color="error">
+        {{playCardsError.message}}
+      </v-snackbar>
 
       <v-row no-gutters justify="center">
 
@@ -171,6 +203,45 @@ export default {
             :loading="busyPlayingCards"
             class="pa-2 ma-2"
             @click="onFaceDownCardClick(card)" />
+
+        </v-col>
+
+      </v-row>
+
+      <v-divider v-if="pilesResponse.discardPileCards.length > 0" />
+
+      <v-row v-if="pilesResponse.discardPileCards.length > 0" no-gutters justify="center">
+
+        <v-col
+          cols="3"
+          sm="3">
+
+          <PlayCard
+            v-bind="pilesResponse.discardPileCards[pilesResponse.discardPileCards.length - 1]"
+            :loading="busyPlayingCards"
+            class="pa-2 ma-2"
+            @click="onDiscardCardClick(pilesResponse.discardPileCards[pilesResponse.discardPileCards.length - 1])" />
+
+        </v-col>
+
+      </v-row>
+
+      <v-divider />
+
+      <v-row no-gutters justify="center">
+
+        <v-col
+          v-for="card in pilesResponse.discardPileCards"
+          :key="card.id"
+          cols="3"
+          sm="3">
+
+          <PlayCard
+            v-bind="card"
+            faded
+            :loading="busyPlayingCards"
+            class="pa-2 ma-2"
+            @click="onDiscardCardClick(card)" />
 
         </v-col>
 
