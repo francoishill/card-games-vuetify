@@ -15,6 +15,8 @@ export default {
     return {
       hadStoredIds: !!storedGameId && !!storedPlayerId,
 
+      sortCards: false,
+
       busyCreating: false,
       busyJoining: false,
       busyGettingPiles: false,
@@ -26,6 +28,9 @@ export default {
 
       playCardsPayload: undefined,
       triggerPlayCards: 0,
+
+      triggerPickUpDiscardPile: 0,
+
       triggerGetPlayerPiles: 0,
 
       playCardsError: undefined,
@@ -35,6 +40,28 @@ export default {
   computed: {
     canPlayFaceUp() { return this.pilesResponse.handCards.length === 0 },
     canPlayFaceDown() { return this.pilesResponse.handCards.length === 0 && this.pilesResponse.faceUpCards.length === 0 },
+
+    handCards() {
+      if (!this.sortCards) return this.pilesResponse.handCards
+
+      const clonedArray = this.pilesResponse.handCards.map(c => c)
+      clonedArray.sort(function (card1, card2) {
+        if (card1.value > card2.value) {
+          return 1;
+        }
+        if (card2.value > card1.value) {
+          return -1;
+        }
+        return 0;
+      })
+      return clonedArray
+    },
+
+    faceUpCards() { return this.pilesResponse.faceUpCards },
+
+    faceDownCards() { return this.pilesResponse.faceDownCards },
+
+    discardPileCards() { return this.pilesResponse.discardPileCards },
   },
 
   watch: {
@@ -54,7 +81,7 @@ export default {
 
     onFaceUpCardClick(card) {
       if (!this.canPlayFaceUp) {
-        console.debug('Cannot play FaceUp cards currently')
+        this.onPlayCardsError('Cannot play FaceUp cards currently')
         return
       }
 
@@ -64,7 +91,7 @@ export default {
 
     onFaceDownCardClick(card) {
       if (!this.canPlayFaceDown) {
-        console.debug('Cannot play FaceDown cards currently')
+        this.onPlayCardsError('Cannot play FaceDown cards currently')
         return
       }
 
@@ -72,9 +99,8 @@ export default {
       this.playCards([card.id])
     },
 
-    onDiscardCardClick(card) {
-      console.debug('onDiscardCardClick', card)
-      alert('TODO: picking up discard pile is not yet implemented')
+    onDiscardCardClick() {
+      this.triggerPickUpDiscardPile++
     },
 
     playCards(cardIds) {
@@ -138,6 +164,15 @@ export default {
       @then="triggerGetPlayerPiles++; clearPlayCardsError()"
       @catch="onPlayCardsError" />
 
+    <PromiseHeadless
+      v-if="triggerPickUpDiscardPile > 0"
+      :key="`pick-up-discard-pile-${triggerPickUpDiscardPile}`"
+      :factory="shitheadRepository.pickUpDiscardPile"
+      :arg="{gameId: gameId, playerId: playerId}"
+      :busy.sync="busyPlayingCards"
+      @then="triggerGetPlayerPiles++; clearPlayCardsError()"
+      @catch="onPlayCardsError" />
+
     <RealtimeMessageListener
       method="GameMove"
       @message="triggerGetPlayerPiles++"
@@ -153,10 +188,18 @@ export default {
         {{playCardsError.message}}
       </v-snackbar>
 
+      <v-card class="py-1 px-2">
+        <v-switch
+          label="Sort cards"
+          v-model="sortCards"
+          hide-details
+          class="py-0 my-0" />
+      </v-card>
+
       <v-row no-gutters justify="center">
 
         <v-col
-          v-for="card in pilesResponse.handCards"
+          v-for="card in handCards"
           :key="card.id"
           cols="3"
           sm="3">
@@ -176,7 +219,7 @@ export default {
       <v-row no-gutters justify="center">
 
         <v-col
-          v-for="card in pilesResponse.faceUpCards"
+          v-for="card in faceUpCards"
           :key="card.id"
           cols="3"
           sm="3">
@@ -197,7 +240,7 @@ export default {
       <v-row no-gutters justify="center">
 
         <v-col
-          v-for="card in pilesResponse.faceDownCards"
+          v-for="card in faceDownCards"
           :key="card.id"
           cols="3"
           sm="3">
@@ -236,7 +279,7 @@ export default {
       <v-row no-gutters justify="center">
 
         <v-col
-          v-for="card in pilesResponse.discardPileCards"
+          v-for="card in discardPileCards"
           :key="card.id"
           cols="3"
           sm="3">
