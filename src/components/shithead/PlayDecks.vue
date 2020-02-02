@@ -19,32 +19,34 @@ export default {
 
       busyCreating: false,
       busyJoining: false,
-      busyGettingPiles: false,
+      busyGettingState: false,
       busyPlayingCards: false,
 
       gameId: storedGameId || undefined,
       playerId: storedPlayerId || undefined,
-      pilesResponse: undefined,
+      gameState: undefined,
 
       playCardsPayload: undefined,
       triggerPlayCards: 0,
 
       triggerPickUpDiscardPile: 0,
 
-      triggerGetPlayerPiles: 0,
+      triggerGetGameState: 0,
 
       playCardsError: undefined,
     }
   },
 
   computed: {
-    canPlayFaceUp() { return this.pilesResponse.handCards.length === 0 },
-    canPlayFaceDown() { return this.pilesResponse.handCards.length === 0 && this.pilesResponse.faceUpCards.length === 0 },
+    canPlayFaceUp() { return this.gameState.handCards.length === 0 },
+    canPlayFaceDown() { return this.gameState.handCards.length === 0 && this.gameState.faceUpCards.length === 0 },
+
+    isMyTurn() { return this.gameState.isMyTurn },
 
     handCards() {
-      if (!this.sortCards) return this.pilesResponse.handCards
+      if (!this.sortCards) return this.gameState.handCards
 
-      const clonedArray = this.pilesResponse.handCards.map(c => c)
+      const clonedArray = this.gameState.handCards.map(c => c)
       clonedArray.sort(function (card1, card2) {
         if (card1.value > card2.value) {
           return 1;
@@ -57,11 +59,11 @@ export default {
       return clonedArray
     },
 
-    faceUpCards() { return this.pilesResponse.faceUpCards },
+    faceUpCards() { return this.gameState.faceUpCards },
 
-    faceDownCards() { return this.pilesResponse.faceDownCards },
+    faceDownCards() { return this.gameState.faceDownCards },
 
-    discardPileCards() { return this.pilesResponse.discardPileCards },
+    discardPileCards() { return this.gameState.discardPileCards },
   },
 
   watch: {
@@ -149,11 +151,11 @@ export default {
 
     <PromiseHeadless
       v-if="playerId"
-      :key="`get-piles-${triggerGetPlayerPiles}`"
-      :factory="shitheadRepository.getPlayerPiles"
+      :key="`get-piles-${triggerGetGameState}`"
+      :factory="shitheadRepository.getGameState"
       :arg="{gameId: gameId, playerId: playerId}"
-      :busy.sync="busyGettingPiles"
-      @then="pilesResponse = $event" />
+      :busy.sync="busyGettingState"
+      @then="gameState = $event" />
 
     <PromiseHeadless
       v-if="playCardsPayload"
@@ -161,7 +163,7 @@ export default {
       :factory="shitheadRepository.playCards"
       :arg="playCardsPayload"
       :busy.sync="busyPlayingCards"
-      @then="triggerGetPlayerPiles++; clearPlayCardsError()"
+      @then="triggerGetGameState++; clearPlayCardsError()"
       @catch="onPlayCardsError" />
 
     <PromiseHeadless
@@ -170,15 +172,15 @@ export default {
       :factory="shitheadRepository.pickUpDiscardPile"
       :arg="{gameId: gameId, playerId: playerId}"
       :busy.sync="busyPlayingCards"
-      @then="triggerGetPlayerPiles++; clearPlayCardsError()"
+      @then="triggerGetGameState++; clearPlayCardsError()"
       @catch="onPlayCardsError" />
 
     <RealtimeMessageListener
       method="GameMove"
-      @message="triggerGetPlayerPiles++"
-      @reconnect="triggerGetPlayerPiles++" />
+      @message="triggerGetGameState++"
+      @reconnect="triggerGetGameState++" />
 
-    <v-container v-if="pilesResponse" class="grey lighten-5">
+    <v-container v-if="gameState" class="grey lighten-5">
 
       <v-snackbar
         v-if="playCardsError"
@@ -189,11 +191,40 @@ export default {
       </v-snackbar>
 
       <v-card class="py-1 px-2">
-        <v-switch
-          label="Sort cards"
-          v-model="sortCards"
-          hide-details
-          class="py-0 my-0" />
+
+        <div class="d-flex align-center">
+          <div>
+            <v-switch
+              label="Sort cards"
+              v-model="sortCards"
+              hide-details
+              class="py-0 my-0" />
+
+            <v-fade-transition>
+              <v-alert
+                v-if="!isMyTurn"
+                :value="true"
+                color="warning"
+                outlined
+                dark
+                class="mt-3">
+                Waiting on another player
+              </v-alert>
+            </v-fade-transition>
+          </div>
+
+          <v-spacer />
+
+          <div v-if="gameState.discardPileCards.length > 0" class="d-flex flex-column align-center">
+            <small class="grey--text">Discarded</small>
+            <PlayCard
+              v-bind="gameState.discardPileCards[gameState.discardPileCards.length - 1]"
+              :loading="busyPlayingCards"
+              class="pa-2 ma-2"
+              :image-width="40"
+              @click="onDiscardCardClick(gameState.discardPileCards[gameState.discardPileCards.length - 1])" />
+          </div>
+        </div>
       </v-card>
 
       <v-row no-gutters justify="center">
@@ -251,24 +282,6 @@ export default {
             :loading="busyPlayingCards"
             class="pa-2 ma-2"
             @click="onFaceDownCardClick(card)" />
-
-        </v-col>
-
-      </v-row>
-
-      <v-divider v-if="pilesResponse.discardPileCards.length > 0" />
-
-      <v-row v-if="pilesResponse.discardPileCards.length > 0" no-gutters justify="center">
-
-        <v-col
-          cols="3"
-          sm="3">
-
-          <PlayCard
-            v-bind="pilesResponse.discardPileCards[pilesResponse.discardPileCards.length - 1]"
-            :loading="busyPlayingCards"
-            class="pa-2 ma-2"
-            @click="onDiscardCardClick(pilesResponse.discardPileCards[pilesResponse.discardPileCards.length - 1])" />
 
         </v-col>
 

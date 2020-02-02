@@ -11,8 +11,8 @@ export default {
     return response.data;
   },
 
-  async getPlayerPiles({ gameId, playerId }) {
-    const response = await ApiClient.get(`api/Games/shithead/${gameId}/piles`, { headers: { 'X-Player-Id': playerId } });
+  async getGameState({ gameId, playerId }) {
+    const response = await ApiClient.get(`api/Games/shithead/${gameId}/state`, { headers: { 'X-Player-Id': playerId } });
     return response.data;
   },
 

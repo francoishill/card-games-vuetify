@@ -15,14 +15,12 @@ export default {
     isVisible: { type: Boolean, required: true },
 
     faded: { type: Boolean },
+
+    imageWidth: { type: Number, default: () => 50 },
   },
 
-  data() {
-    const imageWidth = 50
-    return {
-      cardWidth: imageWidth + 20,
-      imageWidth: imageWidth,
-    }
+  computed: {
+    cardWidth() { return this.imageWidth + 20 },
   },
 }
 </script>
