@@ -3,7 +3,7 @@ import config from '../config'
 import { HubConnectionBuilder, LogLevel } from '@aspnet/signalr'
 import { RealtimeState } from '../state/RealtimeState';
 
-const reconnectInterval = 5000;
+const reconnectInterval = 10000;
 
 function registerEvents(connection, realtimeHub) {
   connection.on('GameMove', (gameId, playerId) => {
