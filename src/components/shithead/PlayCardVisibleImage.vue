@@ -1,10 +1,6 @@
 <script>
 
 const images = {
-  'clubs-1': 'https://i.ibb.co/X7nMKYz/AC.png',
-  'diamonds-1': 'https://i.ibb.co/fMh2tZc/AD.png',
-  'hearts-1': 'https://i.ibb.co/h2ZCzyG/AH.png',
-  'spades-1': 'https://i.ibb.co/BqM7DWV/AS.png',
   'clubs-2': 'https://i.ibb.co/D5c4ntr/2C.png',
   'diamonds-2': 'https://i.ibb.co/87gHQNm/2D.png',
   'hearts-2': 'https://i.ibb.co/4gSGr4v/2H.png',
@@ -53,6 +49,10 @@ const images = {
   'diamonds-13': 'https://i.ibb.co/QHhffym/KD.png',
   'hearts-13': 'https://i.ibb.co/9HjXrJy/KH.png',
   'spades-13': 'https://i.ibb.co/7VYj9Tm/KS.png',
+  'clubs-14': 'https://i.ibb.co/X7nMKYz/AC.png',
+  'diamonds-14': 'https://i.ibb.co/fMh2tZc/AD.png',
+  'hearts-14': 'https://i.ibb.co/h2ZCzyG/AH.png',
+  'spades-14': 'https://i.ibb.co/BqM7DWV/AS.png',
 }
 
 function getCardImageUri(suit, value) {
